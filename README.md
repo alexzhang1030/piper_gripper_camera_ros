@@ -19,6 +19,7 @@ ros2 launch piper_gripper_camera piper_gripper_camera.launch.py device_id:=0
 | Topic | Type | Description |
 |-------|------|-------------|
 | `~/image_raw` | `sensor_msgs/Image` | Raw BGR8 frames |
+| `~/image_raw/compressed` | `sensor_msgs/CompressedImage` | JPEG-compressed frames |
 | `~/camera_info` | `sensor_msgs/CameraInfo` | Camera calibration info |
 
 ## Parameters
@@ -29,6 +30,7 @@ ros2 launch piper_gripper_camera piper_gripper_camera.launch.py device_id:=0
 | `image_width` | `640` | Capture width (px) |
 | `image_height` | `480` | Capture height (px) |
 | `fps` | `30.0` | Target frame rate |
+| `jpeg_quality` | `80` | JPEG quality for `~/image_raw/compressed` (1–100) |
 | `camera_info_url` | `""` | `file:///path/to/camera_info.yaml` |
 | `frame_id` | `piper_gripper_camera_frame` | TF frame id |
 

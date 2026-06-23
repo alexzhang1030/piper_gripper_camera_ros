@@ -10,6 +10,7 @@
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "sensor_msgs/msg/compressed_image.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
 #include <opencv2/videoio.hpp>
@@ -32,11 +33,13 @@ private:
   int image_width_;
   int image_height_;
   double fps_;
+  int jpeg_quality_;
 
   std::unique_ptr<cv::VideoCapture> cap_;
   std::unique_ptr<camera_info_manager::CameraInfoManager> cinfo_manager_;
 
   image_transport::Publisher image_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr compressed_pub_;
   rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_pub_;
 
   std::thread capture_thread_;

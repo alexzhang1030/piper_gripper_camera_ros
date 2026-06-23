@@ -1,10 +1,13 @@
 #include "piper_gripper_camera/piper_gripper_camera_node.hpp"
 
 #include <chrono>
+#include <vector>
 
 #include "cv_bridge/cv_bridge.h"
+#include "sensor_msgs/msg/compressed_image.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
+#include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
 namespace piper_gripper_camera
@@ -19,6 +22,7 @@ PiperGripperCameraNode::PiperGripperCameraNode(const rclcpp::NodeOptions & optio
   image_width_ = declare_parameter<int>("image_width", 640);
   image_height_= declare_parameter<int>("image_height", 480);
   fps_         = declare_parameter<double>("fps", 30.0);
+  jpeg_quality_ = declare_parameter<int>("jpeg_quality", 80);
   std::string camera_info_url = declare_parameter<std::string>("camera_info_url", "");
 
   cap_ = std::make_unique<cv::VideoCapture>(device_id_);
@@ -33,14 +37,16 @@ PiperGripperCameraNode::PiperGripperCameraNode(const rclcpp::NodeOptions & optio
   cinfo_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
     this, camera_name_, camera_info_url);
 
-  image_pub_       = image_transport::create_publisher(this, "~/image_raw");
-  camera_info_pub_ = create_publisher<sensor_msgs::msg::CameraInfo>("~/camera_info", 10);
+  image_pub_            = image_transport::create_publisher(this, "~/image_raw");
+  compressed_pub_       = create_publisher<sensor_msgs::msg::CompressedImage>("~/image_raw/compressed", 10);
+  camera_info_pub_      = create_publisher<sensor_msgs::msg::CameraInfo>("~/camera_info", 10);
 
   running_ = true;
   capture_thread_ = std::thread(&PiperGripperCameraNode::capture_loop, this);
 
-  RCLCPP_INFO(get_logger(), "Piper gripper camera started (device=%d, %dx%d @ %.0ffps)",
-    device_id_, image_width_, image_height_, fps_);
+  RCLCPP_INFO(get_logger(),
+    "Piper gripper camera started (device=%d, %dx%d @ %.0ffps, jpeg_quality=%d)",
+    device_id_, image_width_, image_height_, fps_, jpeg_quality_);
 }
 
 PiperGripperCameraNode::~PiperGripperCameraNode()
@@ -63,12 +69,23 @@ void PiperGripperCameraNode::capture_loop()
 
     auto stamp = now();
 
-    // Publish image
+    // Publish raw image
     auto img_msg = cv_bridge::CvImage(
       std_msgs::msg::Header{}, sensor_msgs::image_encodings::BGR8, frame).toImageMsg();
     img_msg->header.stamp    = stamp;
     img_msg->header.frame_id = frame_id_;
     image_pub_.publish(*img_msg);
+
+    // Publish compressed image (JPEG)
+    if (compressed_pub_->get_subscription_count() > 0) {
+      sensor_msgs::msg::CompressedImage compressed_msg;
+      compressed_msg.header.stamp    = stamp;
+      compressed_msg.header.frame_id = frame_id_;
+      compressed_msg.format          = "jpeg";
+      std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, jpeg_quality_};
+      cv::imencode(".jpg", frame, compressed_msg.data, params);
+      compressed_pub_->publish(compressed_msg);
+    }
 
     // Publish camera_info
     auto ci = cinfo_manager_->getCameraInfo();
