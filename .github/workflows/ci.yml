@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container:
+      image: ros:jazzy
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src/piper_gripper_camera
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          rosdep update
+          rosdep install --from-paths src --ignore-src -y
+
+      - name: Build
+        run: |
+          . /opt/ros/jazzy/setup.sh
+          colcon build --packages-select piper_gripper_camera
+
+      - name: Test
+        run: |
+          . /opt/ros/jazzy/setup.sh
+          colcon test --packages-select piper_gripper_camera
+          colcon test-result --verbose
