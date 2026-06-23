@@ -6,10 +6,11 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument("device_id",    default_value="0"),
-        DeclareLaunchArgument("image_width",  default_value="640"),
-        DeclareLaunchArgument("image_height", default_value="480"),
-        DeclareLaunchArgument("fps",          default_value="30.0"),
+        DeclareLaunchArgument("device",        default_value="/dev/piper_gripper_cam",
+                              description="V4L2 device path, e.g. /dev/video0 or /dev/piper_gripper_cam"),
+        DeclareLaunchArgument("image_width",   default_value="640"),
+        DeclareLaunchArgument("image_height",  default_value="480"),
+        DeclareLaunchArgument("fps",           default_value="30.0"),
         DeclareLaunchArgument("camera_info_url", default_value=""),
 
         Node(
@@ -18,7 +19,7 @@ def generate_launch_description():
             name="piper_gripper_camera",
             output="screen",
             parameters=[{
-                "device_id":       LaunchConfiguration("device_id"),
+                "device":          LaunchConfiguration("device"),
                 "image_width":     LaunchConfiguration("image_width"),
                 "image_height":    LaunchConfiguration("image_height"),
                 "fps":             LaunchConfiguration("fps"),

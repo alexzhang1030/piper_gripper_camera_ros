@@ -2,8 +2,8 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>piper_gripper_camera</name>
-  <version>0.1.0</version>
-  <description>ROS 2 node for the Piper gripper camera (USB/UVC).</description>
+  <version>0.2.0</version>
+  <description>ROS 2 node for the Piper gripper USB/V4L2 camera.</description>
 
   <maintainer email="todo@example.com">alexzhang1030</maintainer>
   <license>Apache-2.0</license>
@@ -18,7 +18,6 @@
 
   <!-- compressed/theora transports loaded at runtime via pluginlib -->
   <exec_depend>image_transport_plugins</exec_depend>
-  <exec_depend>usb_cam</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

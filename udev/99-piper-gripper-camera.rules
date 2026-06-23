@@ -1,0 +1,14 @@
+# Piper gripper camera — stable symlink bound to USB serial number.
+#
+# 1. Find serial:  scripts/find_camera_serial.sh
+# 2. Replace YOUR_SERIAL_HERE below
+# 3. Install:
+#      sudo cp udev/99-piper-gripper-camera.rules /etc/udev/rules.d/
+#      sudo udevadm control --reload-rules && sudo udevadm trigger
+# 4. Use:  device:=/dev/piper_gripper_cam
+
+SUBSYSTEM=="video4linux", \
+  ENV{ID_SERIAL}=="YOUR_SERIAL_HERE", \
+  ATTR{index}=="0", \
+  SYMLINK+="piper_gripper_cam", \
+  TAG+="uaccess"
